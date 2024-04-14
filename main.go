@@ -4,8 +4,7 @@ import (
 	"log"
 	"net/http"
 	"time"
-	"fmt" 
-	"strings"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/errgroup"
@@ -28,18 +27,6 @@ func router01() http.Handler {
 	return e
 }
 
-func router02() http.Handler {
-	e := gin.New()
-	e.Use(gin.Recovery())
-	e.GET("*path", func(c *gin.Context) {
-		reqhost := strings.Split(c.Request.Host, ":")[0]
-        c.Redirect(302, "https://" + reqhost + ":443" + c.Request.RequestURI)
-		fmt.Println("HTTP request received! Redirecting to https://" + reqhost + ":443" + c.Request.RequestURI)
-	})
-
-	return e
-}
-
 func main() {
 	server01 := &http.Server{
 		Addr:         ":443",
@@ -48,19 +35,8 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	server02 := &http.Server{
-		Addr:         ":8080",
-		Handler:      router02(),
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-	}
-
 	g.Go(func() error {
-		return server01.ListenAndServeTLS("certfile.pem", "keyfile.pem")
-	})
-
-	g.Go(func() error {
-		return server02.ListenAndServe()
+		return server01.ListenAndServeTLS("cert.pem", "key.pem")
 	})
 
 	if err := g.Wait(); err != nil {

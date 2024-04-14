@@ -1,15 +1,19 @@
-FROM golang:latest
+FROM golang:latest AS build
 
 RUN mkdir /build
 WORKDIR /build
 
-RUN Export GO111MODULE=on
-RUN go get github.com/josephyiwang/JOSEPH_Challenge
+RUN export GO111MODULE=on
 RUN cd /build && git clone https://github.com/josephyiwang/JOSEPH_Challenge.git
+RUN cd /build/JOSEPH_Challenge && go mod tidy && go build -o /build/main
 
-RUN cd /build/JOSEPH_Challenge && go build
+FROM ubuntu:latest
 
-EXPOSE 8080
+WORKDIR /app
+COPY --from=build /build/main .
+COPY cert.pem .
+COPY key.pem .
+
 EXPOSE 443
 
-ENTRYPOINT [ "/build/JOSEPH_Challenge/main" ]
+CMD ["./main"]
