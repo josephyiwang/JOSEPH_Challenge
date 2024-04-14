@@ -14,6 +14,11 @@ COPY --from=build /build/main .
 COPY cert.pem .
 COPY key.pem .
 
+
+RUN mkdir /static
+WORKDIR /static
+COPY static/index.html .
+
 EXPOSE 443
 
 CMD ["./main"]
